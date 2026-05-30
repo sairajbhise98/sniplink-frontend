@@ -1,0 +1,35 @@
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.placeholderIcon {
+  width: 64px;
+  height: 64px;
+  background: rgba(124, 58, 237, .1);
+  border: 1px solid rgba(124, 58, 237, .2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.placeholderTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 10px;
+}
+
+.placeholderText {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.7;
+}
+
+.placeholderText strong { color: #f1f5f9; }

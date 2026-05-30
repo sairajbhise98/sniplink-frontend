@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkSnip — Smart URL Shortener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07071a;--bg2:#0d0d24;--bg3:#12122e;--border:#1e1e42;--border2:#252550;
+  --p:#7c3aed;--ph:#6d28d9;--pl:rgba(124,58,237,.12);--pl2:rgba(124,58,237,.06);
+  --cyan:#06b6d4;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --t:#f1f5f9;--t2:#94a3b8;--t3:#64748b;
+  --grad:linear-gradient(135deg,#7c3aed 0%,#06b6d4 100%);
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --glow:0 0 20px rgba(124,58,237,.25);
+  --r:12px;--r2:8px;--r3:16px;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.5}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,textarea,select{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── AUTH ── */
+#auth-view{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.auth-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(124,58,237,.18) 0%,transparent 70%),radial-gradient(ellipse 50% 40% at 90% 80%,rgba(6,182,212,.1) 0%,transparent 60%)}
+.auth-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.3;pointer-events:none}
+.auth-orb-1{width:400px;height:400px;background:#7c3aed;top:-150px;left:-100px}
+.auth-orb-2{width:300px;height:300px;background:#06b6d4;bottom:-100px;right:-50px}
+.auth-box{position:relative;z-index:1;width:100%;max-width:440px;padding:20px}
+.auth-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:32px}
+.auth-logo-icon{width:40px;height:40px;background:var(--grad);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.auth-logo-text{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.auth-logo-text span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:36px;box-shadow:var(--shadow)}
+.auth-tabs{display:flex;background:var(--bg3);border-radius:var(--r2);padding:4px;margin-bottom:28px;gap:4px}
+.auth-tab{flex:1;padding:9px;border-radius:6px;font-size:14px;font-weight:500;color:var(--t3);background:none;transition:all .2s}
+.auth-tab.active{background:var(--bg2);color:var(--t);box-shadow:0 1px 6px rgba(0,0,0,.3)}
+.auth-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.auth-sub{color:var(--t2);font-size:13px;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;color:var(--t);font-size:14px;transition:border-color .2s,box-shadow .2s}
+.form-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.form-input::placeholder{color:var(--t3)}
+.form-input.error{border-color:var(--red)}
+.form-error{color:var(--red);font-size:12px;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:var(--r2);font-size:14px;font-weight:600;transition:all .18s;white-space:nowrap}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,58,237,.45)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:none;color:var(--t2);padding:8px 12px}
+.btn-ghost:hover{color:var(--t);background:var(--pl2)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:6px}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-outline{background:none;border:1px solid var(--border2);color:var(--t2)}
+.btn-outline:hover{border-color:var(--p);color:var(--p);background:var(--pl2)}
+.btn-full{width:100%;margin-top:8px}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--t3);font-size:12px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.demo-hint{background:var(--pl2);border:1px solid rgba(124,58,237,.2);border-radius:var(--r2);padding:12px 14px;font-size:12px;color:var(--t2);margin-top:16px;line-height:1.6}
+.demo-hint strong{color:var(--p)}
+
+/* ── APP SHELL ── */
+#app-view{display:none;min-height:100vh;flex-direction:column}
+#app-view.show{display:flex}
+
+/* HEADER */
+.header{height:60px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.header-logo{display:flex;align-items:center;gap:8px;margin-right:8px}
+.header-logo-icon{width:30px;height:30px;background:var(--grad);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.header-logo-text{font-size:16px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-divider{width:1px;height:24px;background:var(--border2);margin:0 4px}
+.header-nav{display:flex;align-items:center;gap:2px;flex:1}
+.nav-item{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r2);font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;transition:all .2s;border:none;background:none;font-family:inherit}
+.nav-item:hover{color:var(--t);background:var(--pl2)}
+.nav-item.active{color:var(--p);background:var(--pl)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.header-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+
+/* SESSION TIMER */
+.session-timer{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--t2);transition:all .3s}
+.session-timer.warning{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06);color:var(--yellow)}
+.session-timer.critical{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);color:var(--red);animation:pulse 1s infinite}
+.timer-dot{width:6px;height:6px;border-radius:50%;background:var(--green);transition:background .3s}
+.session-timer.warning .timer-dot{background:var(--yellow)}
+.session-timer.critical .timer-dot{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;border:2px solid var(--border2);transition:border-color .2s}
+.user-avatar:hover{border-color:var(--p)}
+
+/* MAIN CONTENT */
+.main{flex:1;padding:28px 32px;max-width:1200px;width:100%;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px}
+.page-title{font-size:24px;font-weight:700;letter-spacing:-.3px}
+.page-sub{color:var(--t2);font-size:13px;margin-top:3px}
+
+/* STATS CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:all .2s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .2s}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--glow)}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.stat-icon-purple{background:var(--pl)}
+.stat-icon-cyan{background:rgba(6,182,212,.1)}
+.stat-icon-green{background:rgba(16,185,129,.1)}
+.stat-icon-yellow{background:rgba(245,158,11,.1)}
+.stat-value{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--t2);font-weight:500}
+.stat-change{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;margin-top:8px;padding:2px 8px;border-radius:20px}
+.stat-change.up{background:rgba(16,185,129,.12);color:var(--green)}
+.stat-change.down{background:rgba(239,68,68,.12);color:var(--red)}
+
+/* LINKS TABLE */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+.card-title{font-size:15px;font-weight:700}
+.card-actions{display:flex;align-items:center;gap:10px}
+.search-input{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:8px 12px 8px 36px;color:var(--t);font-size:13px;width:220px;transition:all .2s}
+.search-input:focus{border-color:var(--p);box-shadow:0 0 0 2px rgba(124,58,237,.12);width:260px}
+.search-wrap{position:relative}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;padding:12px 16px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)}
+.table td{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tbody tr{transition:background .15s}
+.table tbody tr:hover{background:rgba(255,255,255,.02)}
+.url-cell{display:flex;flex-direction:column;gap:3px;max-width:260px}
+.url-original{font-size:12px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.url-short{display:flex;align-items:center;gap:6px}
+.url-short-text{font-size:13px;font-weight:600;color:var(--cyan)}
+.copy-btn{background:none;border:none;color:var(--t3);cursor:pointer;padding:3px;border-radius:4px;display:flex;transition:color .15s}
+.copy-btn:hover{color:var(--cyan)}
+.copy-btn.copied{color:var(--green)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.badge-inactive{background:rgba(100,116,139,.1);color:var(--t3);border:1px solid var(--border2)}
+.badge-expiring{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+.click-bar{display:flex;align-items:center;gap:10px}
+.mini-chart{display:flex;align-items:flex-end;gap:2px;height:24px}
+.mini-bar{width:4px;border-radius:2px 2px 0 0;background:var(--p);opacity:.4;transition:opacity .2s}
+.mini-bar.last{opacity:1}
+.click-count{font-size:13px;font-weight:700}
+.toggle-wrap{display:flex;align-items:center}
+.toggle{width:38px;height:20px;border-radius:20px;border:none;cursor:pointer;transition:all .2s;position:relative;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle.off{background:var(--border2)}
+.toggle-knob{position:absolute;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s;left:3px}
+.toggle.on .toggle-knob{transform:translateX(18px)}
+.row-actions{display:flex;align-items:center;gap:4px}
+.icon-btn{background:none;border:none;padding:7px;border-radius:6px;color:var(--t3);cursor:pointer;display:flex;transition:all .18s}
+.icon-btn:hover{background:var(--pl2);color:var(--p)}
+.icon-btn.danger:hover{background:rgba(239,68,68,.1);color:var(--red)}
+.date-cell{font-size:12px;color:var(--t2)}
+.date-cell span{display:block;color:var(--t3);font-size:11px;margin-top:1px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);width:100%;max-width:500px;padding:28px;margin:20px;transform:translateY(20px) scale(.97);transition:transform .2s;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-title{font-size:18px;font-weight:700}
+.modal-close{background:var(--bg3);border:1px solid var(--border);width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--t2);cursor:pointer;transition:all .2s}
+.modal-close:hover{color:var(--t);background:var(--border2)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.modal-lg{max-width:680px}
+
+/* ANALYTICS DETAIL */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.analytics-mini-card{background:var(--bg3);border-radius:var(--r2);padding:16px}
+.analytics-mini-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.analytics-mini-value{font-size:22px;font-weight:800}
+.bar-chart{margin-top:16px}
+.bar-chart-label{font-size:11px;color:var(--t3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:80px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--p);opacity:.7;min-height:4px;transition:opacity .2s}
+.bar:hover{opacity:1}
+.bar-day{font-size:9px;color:var(--t3);text-align:center}
+.bar-val{font-size:9px;color:var(--t2);text-align:center}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 16px;font-size:13px;font-weight:500;box-shadow:var(--shadow);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-width:320px}
+.toast.show{transform:translateX(0)}
+.toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast.success .toast-icon{background:rgba(16,185,129,.2);color:var(--green)}
+.toast.error .toast-icon{background:rgba(239,68,68,.2);color:var(--red)}
+.toast.info .toast-icon{background:var(--pl);color:var(--p)}
+.toast.warning .toast-icon{background:rgba(245,158,11,.15);color:var(--yellow)}
+
+/* EMPTY STATE */
+.empty-state{padding:60px 20px;text-align:center;color:var(--t3)}
+.empty-state-icon{margin:0 auto 16px;width:56px;height:56px;background:var(--bg3);border-radius:16px;display:flex;align-items:center;justify-content:center;color:var(--t3)}
+.empty-state-title{font-size:16px;font-weight:600;color:var(--t2);margin-bottom:6px}
+.empty-state-text{font-size:13px}
+
+/* CHIP FILTERS */
+.filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border2);background:none;color:var(--t3);cursor:pointer;transition:all .2s}
+.filter-chip.active{border-color:var(--p);color:var(--p);background:var(--pl)}
+.filter-chip:hover:not(.active){border-color:var(--border2);color:var(--t2)}
+
+/* ANALYTICS PAGE */
+.analytics-header-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.big-chart{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px}
+.big-bars{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:16px}
+.big-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.big-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:opacity .2s;cursor:pointer}
+.big-bar:hover{opacity:.8}
+.big-bar-label{font-size:10px;color:var(--t3)}
+
+/* TOP LINKS TABLE */
+.rank-badge{width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.rank-1{background:rgba(245,158,11,.15);color:var(--yellow)}
+.rank-2{background:rgba(148,163,184,.1);color:var(--t2)}
+.rank-3{background:rgba(205,127,50,.1);color:#cd7f32}
+.rank-n{background:var(--bg3);color:var(--t3)}
+
+/* SETTINGS PAGE */
+.settings-section{margin-bottom:28px}
+.settings-title{font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-label{font-size:14px;font-weight:500}
+.settings-row-desc{font-size:12px;color:var(--t3);margin-top:2px}
+.profile-row{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.profile-avatar-lg{width:64px;height:64px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0}
+
+/* SESSION EXPIRE BANNER */
+.session-banner{position:fixed;top:0;left:0;right:0;z-index:2000;padding:12px 24px;background:linear-gradient(90deg,rgba(239,68,68,.95),rgba(220,38,38,.95));backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;font-weight:600;transform:translateY(-100%);transition:transform .3s}
+.session-banner.show{transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .main{padding:20px 16px}
+}
+@media(max-width:640px){
+  .stats-grid{grid-template-columns:1fr}
+  .table th:nth-child(3),.table td:nth-child(3),
+  .table th:nth-child(5),.table td:nth-child(5){display:none}
+}
+
+/* LOADING SHIMMER */
+.shimmer{background:linear-gradient(90deg,var(--bg3) 25%,var(--border2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* GRADIENT TEXT */
+.grad-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* PROGRESS BAR */
+.progress-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:2px;background:var(--grad);transition:width .4s}
+
+/* DROPDOWN MENU */
+.dropdown{position:relative}
+.dropdown-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);min-width:180px;z-index:200;box-shadow:var(--shadow);overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-6px);transition:all .15s}
+.dropdown-menu.open{opacity:1;pointer-events:all;transform:translateY(0)}
+.dropdown-item{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13px;cursor:pointer;transition:background .15s;color:var(--t2)}
+.dropdown-item:hover{background:var(--pl2);color:var(--t)}
+.dropdown-item.danger:hover{background:rgba(239,68,68,.1);color:var(--red)}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+</style>
+</head>
+<body>
+
+<!-- SESSION BANNER -->
+<div class="session-banner" id="sessionBanner">
+  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+  Session expiring in <span id="bannerTime">2:00</span> — save your work!
+  <button class="btn btn-sm" style="background:#fff;color:#dc2626;margin-left:8px" onclick="extendSession()">Extend Session</button>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ══════════════════ AUTH VIEW ══════════════════ -->
+<div id="auth-view">
+  <div class="auth-bg"></div>
+  <div class="auth-orb auth-orb-1"></div>
+  <div class="auth-orb auth-orb-2"></div>
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      </div>
+      <div class="auth-logo-text"><span>LinkSnip</span></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="signupTab" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm">
+        <div class="auth-title">Welcome back</div>
+        <div class="auth-sub">Sign in to manage your links</div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="loginEmail" type="email" placeholder="you@example.com" value="demo@linksnip.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="loginPassword" type="password" placeholder="••••••••" value="demo123">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
+        <div class="demo-hint">
+          <strong>Demo credentials pre-filled:</strong><br>
+          Email: demo@linksnip.com &nbsp;|&nbsp; Password: demo123<br>
+          Or enter any email/password to login.
+        </div>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="signupForm" style="display:none">
+        <div class="auth-title">Get started free</div>
+        <div class="auth-sub">Create your LinkSnip account</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input class="form-input" id="signupFirst" type="text" placeholder="Alex">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" id="signupLast" type="text" placeholder="Morgan">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="signupEmail" type="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="signupPass" type="password" placeholder="Min 8 characters">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input class="form-input" id="signupPass2" type="password" placeholder="Repeat password">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="doSignup()">Create Account</button>
+        <div class="demo-hint">
+          This is a demo — data is not saved. Fill any valid-format details to continue.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ APP VIEW ══════════════════ -->
+<div id="app-view">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-logo">
+      <div class="header-logo-icon">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      </div>
+      <span class="header-logo-text">LinkSnip</span>
+    </div>
+    <div class="header-divider"></div>
+    <nav class="header-nav">
+      <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('links')" id="nav-links">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        My Links
+      </button>
+      <button class="nav-item" onclick="showPage('analytics')" id="nav-analytics">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Analytics
+      </button>
+      <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        Settings
+      </button>
+    </nav>
+    <div class="header-right">
+      <div class="session-timer" id="sessionTimer">
+        <div class="timer-dot"></div>
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+        <span id="timerDisplay">15:00</span>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="openModal('createModal')">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Shorten URL
+      </button>
+      <div class="dropdown">
+        <div class="user-avatar" id="userAvatarBtn" onclick="toggleDropdown('userMenu')">
+          <span id="userInitial">D</span>
+        </div>
+        <div class="dropdown-menu" id="userMenu">
+          <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:600" id="dropdownName">Demo User</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="dropdownEmail">demo@linksnip.com</div>
+          </div>
+          <div class="dropdown-item" onclick="showPage('settings');toggleDropdown('userMenu')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+            Account Settings
+          </div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item danger" onclick="doLogout()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            Sign Out
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Welcome back, <span id="welcomeName">Demo</span>! Here's your link overview.</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('createModal')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Shorten URL
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-purple">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          </div>
+          <div class="stat-value grad-text" id="stat-total">24</div>
+          <div class="stat-label">Total Links</div>
+          <div class="stat-change up">▲ 3 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-cyan">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#06b6d4" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </div>
+          <div class="stat-value" id="stat-clicks">48,293</div>
+          <div class="stat-label">Total Clicks</div>
+          <div class="stat-change up">▲ 12.4% this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-green">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="stat-value" id="stat-active">19</div>
+          <div class="stat-label">Active Links</div>
+          <div class="stat-change down">▼ 2 inactive</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-yellow">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <div class="stat-value">68.4%</div>
+          <div class="stat-label">Avg Click Rate</div>
+          <div class="stat-change up">▲ 5.1% vs last month</div>
+        </div>
+      </div>
+
+      <!-- RECENT LINKS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Links</div>
+          <div class="card-actions">
+            <button class="btn btn-outline btn-sm" onclick="showPage('links')">View All</button>
+          </div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Link</th>
+              <th>Short URL</th>
+              <th>Clicks</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="recentLinksBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── LINKS PAGE ── -->
+    <div class="page" id="page-links">
+      <div class="page-header">
+        <div>
+          <div class="page-title">My Links</div>
+          <div class="page-sub" id="linkCount">24 links total</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('createModal')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Shorten URL
+        </button>
+      </div>
+      <div class="card-actions" style="margin-bottom:16px;display:flex;gap:10px;align-items:center">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+          </span>
+          <input class="search-input" id="searchInput" placeholder="Search links..." oninput="filterLinks()">
+        </div>
+        <div class="filters" style="margin:0">
+          <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
+          <button class="filter-chip" onclick="setFilter('active',this)">Active</button>
+          <button class="filter-chip" onclick="setFilter('inactive',this)">Inactive</button>
+          <button class="filter-chip" onclick="setFilter('expiring',this)">Expiring Soon</button>
+        </div>
+      </div>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Link</th>
+              <th>Short URL</th>
+              <th>Clicks (7d)</th>
+              <th>Status</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="allLinksBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS PAGE ── -->
+    <div class="page" id="page-analytics">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Analytics</div>
+          <div class="page-sub">Click trends and performance overview</div>
+        </div>
+        <select class="form-input" style="width:160px" onchange="updateAnalyticsChart(this.value)">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+
+      <div class="analytics-header-stats">
+        <div class="stat-card">
+          <div class="stat-label" style="margin-bottom:8px">Total Clicks</div>
+          <div class="stat-value grad-text">48,293</div>
+          <div class="stat-change up" style="margin-top:6px">▲ 12.4%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" style="margin-bottom:8px">Unique Visitors</div>
+          <div class="stat-value">31,847</div>
+          <div class="stat-change up" style="margin-top:6px">▲ 8.7%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" style="margin-bottom:8px">Top Country</div>
+          <div class="stat-value" style="font-size:20px">🇺🇸 United States</div>
+          <div style="color:var(--t3);font-size:12px;margin-top:8px">34.2% of traffic</div>
+        </div>
+      </div>
+
+      <div class="big-chart">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="card-title">Clicks Over Time</div>
+          <div style="display:flex;gap:16px;font-size:12px;color:var(--t3)">
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:var(--p);display:inline-block"></span>Clicks</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:var(--cyan);display:inline-block"></span>Unique</span>
+          </div>
+        </div>
+        <div class="big-bars" id="bigBars"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Performing Links</div></div>
+          <table class="table">
+            <thead><tr><th>#</th><th>Link</th><th>Clicks</th></tr></thead>
+            <tbody id="topLinksBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Traffic by Device</div></div>
+          <div style="padding:20px">
+            <div id="deviceBars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS PAGE ── -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-sub">Manage your account and preferences</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+        <div>
+          <div class="card" style="padding:24px;margin-bottom:20px">
+            <div class="settings-title">Profile</div>
+            <div class="profile-row">
+              <div class="profile-avatar-lg" id="settingsAvatar">D</div>
+              <div>
+                <div style="font-size:16px;font-weight:700" id="settingsName">Demo User</div>
+                <div style="color:var(--t3);font-size:13px" id="settingsEmail">demo@linksnip.com</div>
+                <div style="margin-top:8px">
+                  <span class="badge badge-active">Pro Plan</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Display Name</label><input class="form-input" id="settingsNameInput" value="Demo User"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" value="demo@linksnip.com"></div>
+            <button class="btn btn-primary btn-sm" onclick="showToast('Profile saved successfully','success')">Save Changes</button>
+          </div>
+
+          <div class="card" style="padding:24px">
+            <div class="settings-title">Default Link Settings</div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Default Expiry</div><div class="settings-row-desc">Auto-expire links after this duration</div></div>
+              <select class="form-input" style="width:130px">
+                <option>Never</option><option>7 days</option><option selected>30 days</option><option>90 days</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Custom Domain</div><div class="settings-row-desc">Use your own domain for short links</div></div>
+              <input class="form-input" style="width:160px" placeholder="go.yourdomain.com">
+            </div>
+            <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="showToast('Settings saved','success')">Save</button></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="padding:24px;margin-bottom:20px">
+            <div class="settings-title">Notifications</div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Click Milestones</div><div class="settings-row-desc">Get notified at 100, 1K, 10K clicks</div></div>
+              <div class="toggle-wrap"><button class="toggle on" onclick="toggleSetting(this)"><div class="toggle-knob"></div></button></div>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Link Expiry Alerts</div><div class="settings-row-desc">Alert 3 days before a link expires</div></div>
+              <div class="toggle-wrap"><button class="toggle on" onclick="toggleSetting(this)"><div class="toggle-knob"></div></button></div>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Weekly Report</div><div class="settings-row-desc">Email summary every Monday</div></div>
+              <div class="toggle-wrap"><button class="toggle off" onclick="toggleSetting(this)"><div class="toggle-knob"></div></button></div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:24px">
+            <div class="settings-title">Session</div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Session Timeout</div><div class="settings-row-desc">Auto logout after inactivity</div></div>
+              <select class="form-input" style="width:120px"><option selected>15 min</option><option>30 min</option><option>1 hour</option></select>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Remaining Time</div><div class="settings-row-desc">Current session countdown</div></div>
+              <span class="badge badge-active" id="settingsTimer">15:00</span>
+            </div>
+            <div style="margin-top:16px">
+              <button class="btn btn-outline btn-sm" onclick="extendSession()">Extend Session</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="doLogout()">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ CREATE URL MODAL ══ -->
+<div class="modal-overlay" id="createModal" onclick="closeModalOnBg(event,'createModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Shorten a URL</div>
+      <button class="modal-close" onclick="closeModal('createModal')">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Destination URL</label>
+      <input class="form-input" id="createUrl" placeholder="https://example.com/very-long-url..." oninput="generatePreview()">
+      <div class="form-error" id="createUrlError" style="display:none">Please enter a valid URL</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Custom Slug <span style="color:var(--t3);font-weight:400;text-transform:none">(optional)</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="color:var(--t3);font-size:13px;white-space:nowrap">snip.ly/</span>
+        <input class="form-input" id="createSlug" placeholder="my-link" oninput="updatePreview()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Expiry Date <span style="color:var(--t3);font-weight:400;text-transform:none">(optional)</span></label>
+      <input class="form-input" id="createExpiry" type="date">
+    </div>
+    <div id="urlPreview" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:14px;margin-bottom:4px">
+      <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Preview</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:15px;font-weight:700;color:var(--cyan)" id="previewShort">snip.ly/my-link</div>
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--t3)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        <div style="font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px" id="previewDest">destination</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('createModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createLink()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        Create Short Link
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LINK DETAIL MODAL ══ -->
+<div class="modal-overlay" id="detailModal" onclick="closeModalOnBg(event,'detailModal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">Link Analytics</div>
+      <button class="modal-close" onclick="closeModal('detailModal')">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="modal-overlay" id="deleteModal" onclick="closeModalOnBg(event,'deleteModal')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--red)">Delete Link</div>
+      <button class="modal-close" onclick="closeModal('deleteModal')">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p style="color:var(--t2);font-size:14px;margin-bottom:8px">Are you sure you want to delete <strong id="deleteUrlName" style="color:var(--t)"></strong>?</p>
+    <p style="color:var(--t3);font-size:12px">This action cannot be undone. All analytics data will be lost.</p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete Link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════ DEMO DATA ══════════════════
+const DEMO_LINKS = [
+  {id:1,name:'Rick Roll',original:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',slug:'yt-rick',clicks:5247,active:true,created:'2026-01-15',expires:'2026-07-15',lastClicked:'2 min ago',trend:[120,145,190,167,289,234,356],device:{mobile:58,desktop:32,tablet:10}},
+  {id:2,name:'GitHub Repo',original:'https://github.com/vercel/next.js/releases/tag/v14.2.0',slug:'nextjs-release',clicks:3891,active:true,created:'2026-02-03',expires:'2026-08-03',lastClicked:'15 min ago',trend:[280,310,290,420,380,451,390],device:{mobile:22,desktop:68,tablet:10}},
+  {id:3,name:'Medium Article',original:'https://medium.com/swlh/the-complete-guide-to-modern-javascript-2024',slug:'js-guide',clicks:2104,active:true,created:'2026-02-18',expires:'2026-05-31',lastClicked:'1 hour ago',trend:[80,95,110,88,130,145,167],device:{mobile:45,desktop:42,tablet:13}},
+  {id:4,name:'Product Launch',original:'https://www.producthunt.com/posts/linksnip-url-shortener-pro',slug:'ph-launch',clicks:1847,active:true,created:'2026-03-01',expires:'never',lastClicked:'3 hours ago',trend:[450,320,280,190,145,89,67],device:{mobile:61,desktop:31,tablet:8}},
+  {id:5,name:'Spotify Playlist',original:'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M',slug:'chill-vibes',clicks:1203,active:true,created:'2026-03-10',expires:'never',lastClicked:'5 hours ago',trend:[45,67,89,120,145,167,145],device:{mobile:78,desktop:15,tablet:7}},
+  {id:6,name:'Design Figma',original:'https://www.figma.com/file/Xp7MKRsAQGkLmrCQhMKMgX/Dashboard-UI-Kit',slug:'figma-dash',clicks:987,active:false,created:'2026-03-22',expires:'2026-04-22',lastClicked:'2 days ago',trend:[56,43,38,29,21,14,8],device:{mobile:18,desktop:74,tablet:8}},
+  {id:7,name:'Notion Template',original:'https://www.notion.so/templates/project-management-wiki',slug:'notion-pm',clicks:742,active:true,created:'2026-04-01',expires:'2026-10-01',lastClicked:'1 day ago',trend:[28,35,42,55,68,79,89],device:{mobile:40,desktop:52,tablet:8}},
+  {id:8,name:'Twitter Thread',original:'https://twitter.com/naval/status/1002103360646823936',slug:'naval-thread',clicks:634,active:true,created:'2026-04-15',expires:'never',lastClicked:'6 hours ago',trend:[22,28,35,44,52,58,67],device:{mobile:71,desktop:22,tablet:7}},
+  {id:9,name:'Google Slides',original:'https://docs.google.com/presentation/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms',slug:'q1-review',clicks:421,active:false,created:'2026-01-28',expires:'2026-02-28',lastClicked:'1 week ago',trend:[89,67,45,23,12,5,2],device:{mobile:15,desktop:78,tablet:7}},
+  {id:10,name:'Loom Video',original:'https://www.loom.com/share/abc123def456ghi789jkl012mno345pqr678stu901vwx',slug:'demo-walkthrough',clicks:318,active:true,created:'2026-04-28',expires:'2026-11-28',lastClicked:'3 hours ago',trend:[12,18,24,32,42,54,67],device:{mobile:48,desktop:42,tablet:10}},
+];
+
+// ══════════════════ STATE ══════════════════
+let state = {
+  user: null,
+  links: [...DEMO_LINKS],
+  sessionSeconds: 900, // 15 min
+  timerInterval: null,
+  currentFilter: 'all',
+  deleteTargetId: null,
+};
+
+// ══════════════════ AUTH ══════════════════
+function switchAuthTab(tab) {
+  document.getElementById('loginTab').classList.toggle('active', tab==='login');
+  document.getElementById('signupTab').classList.toggle('active', tab==='signup');
+  document.getElementById('loginForm').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab==='signup' ? 'block' : 'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  if (!email || !pass) { showToast('Please enter email and password','error'); return; }
+  const name = email.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim() || 'Demo User';
+  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  loginSuccess(displayName, email);
+}
+
+function doSignup() {
+  const first = document.getElementById('signupFirst').value.trim();
+  const last = document.getElementById('signupLast').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPass').value;
+  const pass2 = document.getElementById('signupPass2').value;
+  if (!first || !email) { showToast('Please fill in required fields','error'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters','error'); return; }
+  if (pass !== pass2) { showToast('Passwords do not match','error'); return; }
+  loginSuccess((first + ' ' + last).trim(), email);
+}
+
+function loginSuccess(name, email) {
+  state.user = { name, email };
+  state.sessionSeconds = 900;
+  document.getElementById('auth-view').style.display = 'none';
+  document.getElementById('app-view').classList.add('show');
+  // Set user info
+  const initial = name.charAt(0).toUpperCase();
+  document.getElementById('userInitial').textContent = initial;
+  document.getElementById('dropdownName').textContent = name;
+  document.getElementById('dropdownEmail').textContent = email;
+  document.getElementById('welcomeName').textContent = name.split(' ')[0];
+  document.getElementById('settingsAvatar').textContent = initial;
+  document.getElementById('settingsName').textContent = name;
+  document.getElementById('settingsEmail').textContent = email;
+  document.getElementById('settingsNameInput').value = name;
+  // Init app
+  renderRecentLinks();
+  renderAllLinks();
+  renderAnalytics();
+  startTimer();
+  showToast('Welcome back, ' + name.split(' ')[0] + '!', 'success');
+}
+
+function doLogout() {
+  clearInterval(state.timerInterval);
+  document.getElementById('app-view').classList.remove('show');
+  document.getElementById('auth-view').style.display = 'flex';
+  document.getElementById('sessionBanner').classList.remove('show');
+  closeDropdown('userMenu');
+  showToast('Signed out successfully','info');
+}
+
+// ══════════════════ SESSION TIMER ══════════════════
+function startTimer() {
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.sessionSeconds--;
+    updateTimerDisplay();
+    if (state.sessionSeconds <= 0) {
+      clearInterval(state.timerInterval);
+      doLogout();
+    }
+    if (state.sessionSeconds === 120) {
+      document.getElementById('sessionBanner').classList.add('show');
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(state.sessionSeconds / 60);
+  const s = state.sessionSeconds % 60;
+  const str = m + ':' + String(s).padStart(2,'0');
+  document.getElementById('timerDisplay').textContent = str;
+  document.getElementById('settingsTimer').textContent = str;
+  document.getElementById('bannerTime').textContent = str;
+  const el = document.getElementById('sessionTimer');
+  el.classList.remove('warning','critical');
+  if (state.sessionSeconds <= 120) el.classList.add('critical');
+  else if (state.sessionSeconds <= 300) el.classList.add('warning');
+}
+
+function extendSession() {
+  state.sessionSeconds = 900;
+  document.getElementById('sessionBanner').classList.remove('show');
+  updateTimerDisplay();
+  showToast('Session extended by 15 minutes','success');
+}
+
+// ══════════════════ NAVIGATION ══════════════════
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+  closeDropdown('userMenu');
+}
+
+// ══════════════════ RENDER LINKS ══════════════════
+function renderRecentLinks() {
+  const tbody = document.getElementById('recentLinksBody');
+  const recent = state.links.slice(0, 5);
+  tbody.innerHTML = recent.map(l => linkRow(l, false)).join('');
+}
+
+function renderAllLinks() {
+  const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const filter = state.currentFilter;
+  let links = state.links.filter(l => {
+    const matchSearch = !search || l.slug.includes(search) || l.original.toLowerCase().includes(search) || l.name.toLowerCase().includes(search);
+    if (!matchSearch) return false;
+    if (filter === 'active') return l.active;
+    if (filter === 'inactive') return !l.active;
+    if (filter === 'expiring') return l.expires !== 'never' && daysUntil(l.expires) <= 7;
+    return true;
+  });
+  const tbody = document.getElementById('allLinksBody');
+  if (!links.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon"><svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></div><div class="empty-state-title">No links found</div><div class="empty-state-text">Try adjusting your search or filter</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = links.map(l => linkRow(l, true)).join('');
+  document.getElementById('linkCount').textContent = links.length + ' link' + (links.length !== 1 ? 's' : '') + ' total';
+}
+
+function linkRow(l, showExpiry) {
+  const totalClicks = l.trend.reduce((a,b) => a+b, 0);
+  const maxTrend = Math.max(...l.trend);
+  const miniChart = l.trend.map((v,i) => `<div class="mini-bar${i===l.trend.length-1?' last':''}" style="height:${Math.round((v/maxTrend)*100)}%"></div>`).join('');
+  const badge = l.active
+    ? (l.expires !== 'never' && daysUntil(l.expires) <= 7
+      ? `<span class="badge badge-expiring">⚠ Expiring</span>`
+      : `<span class="badge badge-active">● Active</span>`)
+    : `<span class="badge badge-inactive">○ Inactive</span>`;
+  const expiryCell = showExpiry
+    ? `<td class="date-cell">${l.expires === 'never' ? '<span style="color:var(--t3)">Never</span>' : `${l.expires}<span>${daysUntil(l.expires)} days left</span>`}</td>`
+    : `<td class="date-cell">${l.created}<span>Created</span></td>`;
+  return `<tr>
+    <td><div class="url-cell"><div style="font-size:13px;font-weight:600">${l.name}</div><div class="url-original">${l.original}</div></div></td>
+    <td><div class="url-short"><span class="url-short-text">snip.ly/${l.slug}</span><button class="copy-btn" onclick="copyUrl('snip.ly/${l.slug}',this)" title="Copy"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button></div></td>
+    <td><div class="click-bar"><div class="mini-chart">${miniChart}</div><div class="click-count">${l.clicks.toLocaleString()}</div></div></td>
+    <td>${badge}</td>
+    ${expiryCell}
+    <td><div class="row-actions">
+      <button class="icon-btn" onclick="openDetail(${l.id})" title="Analytics"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></button>
+      <button class="toggle ${l.active?'on':'off'}" onclick="toggleLink(${l.id},this)" title="${l.active?'Deactivate':'Activate'}"><div class="toggle-knob"></div></button>
+      <button class="icon-btn danger" onclick="promptDelete(${l.id})" title="Delete"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+    </div></td>
+  </tr>`;
+}
+
+function daysUntil(dateStr) {
+  if (dateStr === 'never') return 9999;
+  const diff = new Date(dateStr) - new Date();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
+
+// ══════════════════ LINK ACTIONS ══════════════════
+function toggleLink(id, btn) {
+  const link = state.links.find(l => l.id === id);
+  if (!link) return;
+  link.active = !link.active;
+  btn.classList.toggle('on', link.active);
+  btn.classList.toggle('off', !link.active);
+  // update badge in same row
+  const badge = btn.closest('tr').querySelectorAll('td')[3];
+  badge.innerHTML = link.active
+    ? `<span class="badge badge-active">● Active</span>`
+    : `<span class="badge badge-inactive">○ Inactive</span>`;
+  showToast(link.active ? 'Link activated' : 'Link deactivated', link.active ? 'success' : 'info');
+  updateStats();
+}
+
+function promptDelete(id) {
+  const link = state.links.find(l => l.id === id);
+  state.deleteTargetId = id;
+  document.getElementById('deleteUrlName').textContent = 'snip.ly/' + link.slug;
+  openModal('deleteModal');
+}
+
+function confirmDelete() {
+  state.links = state.links.filter(l => l.id !== state.deleteTargetId);
+  closeModal('deleteModal');
+  renderRecentLinks();
+  renderAllLinks();
+  updateStats();
+  showToast('Link deleted','error');
+}
+
+function updateStats() {
+  const active = state.links.filter(l => l.active).length;
+  document.getElementById('stat-total').textContent = state.links.length;
+  document.getElementById('stat-active').textContent = active;
+}
+
+function setFilter(filter, btn) {
+  state.currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderAllLinks();
+}
+
+function filterLinks() { renderAllLinks(); }
+
+// ══════════════════ CREATE LINK ══════════════════
+function generatePreview() {
+  const url = document.getElementById('createUrl').value.trim();
+  const preview = document.getElementById('urlPreview');
+  if (url.length > 5) {
+    preview.style.display = 'block';
+    document.getElementById('previewDest').textContent = url;
+    if (!document.getElementById('createSlug').value) {
+      const slug = generateSlug(url);
+      document.getElementById('previewShort').textContent = 'snip.ly/' + slug;
+    }
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+function updatePreview() {
+  const slug = document.getElementById('createSlug').value || generateSlug(document.getElementById('createUrl').value);
+  document.getElementById('previewShort').textContent = 'snip.ly/' + (slug || 'your-link');
+}
+
+function generateSlug(url) {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/\//g,'-').replace(/^-|-$/g,'').toLowerCase().slice(0,12);
+    return path || u.hostname.replace('www.','').split('.')[0].slice(0,8) + '-' + Math.random().toString(36).slice(2,6);
+  } catch { return 'link-' + Math.random().toString(36).slice(2,6); }
+}
+
+function createLink() {
+  const url = document.getElementById('createUrl').value.trim();
+  const errEl = document.getElementById('createUrlError');
+  if (!url || !/^https?:\/\//.test(url)) {
+    errEl.style.display = 'block';
+    document.getElementById('createUrl').classList.add('error');
+    return;
+  }
+  errEl.style.display = 'none';
+  document.getElementById('createUrl').classList.remove('error');
+  const slug = document.getElementById('createSlug').value.trim() || generateSlug(url);
+  const expiry = document.getElementById('createExpiry').value || 'never';
+  const newLink = {
+    id: Date.now(),
+    name: slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),
+    original: url,
+    slug,
+    clicks: 0,
+    active: true,
+    created: new Date().toISOString().slice(0,10),
+    expires: expiry,
+    lastClicked: 'never',
+    trend: [0,0,0,0,0,0,0],
+    device: {mobile:0,desktop:0,tablet:0}
+  };
+  state.links.unshift(newLink);
+  closeModal('createModal');
+  document.getElementById('createUrl').value = '';
+  document.getElementById('createSlug').value = '';
+  document.getElementById('createExpiry').value = '';
+  document.getElementById('urlPreview').style.display = 'none';
+  renderRecentLinks();
+  renderAllLinks();
+  updateStats();
+  showToast('Short link created! snip.ly/' + slug, 'success');
+}
+
+// ══════════════════ DETAIL MODAL ══════════════════
+function openDetail(id) {
+  const l = state.links.find(x => x.id === id);
+  if (!l) return;
+  const maxT = Math.max(...l.trend, 1);
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const bars = l.trend.map((v,i) => `
+    <div class="bar-wrap">
+      <div class="bar-val">${v}</div>
+      <div class="bar" style="height:${Math.round((v/maxT)*72)+4}px;background:${i===l.trend.length-1?'var(--cyan)':'var(--p)'}"></div>
+      <div class="bar-day">${days[i]}</div>
+    </div>`).join('');
+  const weekTotal = l.trend.reduce((a,b)=>a+b,0);
+  document.getElementById('detailContent').innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;color:var(--t3);margin-bottom:4px">Short URL</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px;font-weight:700;color:var(--cyan)">snip.ly/${l.slug}</span>
+        <button class="copy-btn" onclick="copyUrl('snip.ly/${l.slug}',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+      </div>
+      <div style="font-size:12px;color:var(--t3);margin-top:4px">${l.original}</div>
+    </div>
+    <div class="analytics-grid">
+      <div class="analytics-mini-card"><div class="analytics-mini-label">Total Clicks</div><div class="analytics-mini-value grad-text">${l.clicks.toLocaleString()}</div></div>
+      <div class="analytics-mini-card"><div class="analytics-mini-label">This Week</div><div class="analytics-mini-value">${weekTotal}</div></div>
+      <div class="analytics-mini-card"><div class="analytics-mini-label">Last Clicked</div><div class="analytics-mini-value" style="font-size:16px">${l.lastClicked}</div></div>
+      <div class="analytics-mini-card"><div class="analytics-mini-label">Status</div><div class="analytics-mini-value" style="font-size:16px">${l.active?'<span style="color:var(--green)">● Active</span>':'<span style="color:var(--t3)">○ Inactive</span>'}</div></div>
+    </div>
+    <div class="bar-chart">
+      <div class="bar-chart-label">Clicks — Last 7 days</div>
+      <div class="bars">${bars}</div>
+    </div>
+    <div style="margin-top:20px">
+      <div class="bar-chart-label" style="margin-bottom:12px">Device Breakdown</div>
+      ${deviceBarsHtml(l.device)}
+    </div>`;
+  openModal('detailModal');
+}
+
+function deviceBarsHtml(device) {
+  return Object.entries(device).map(([k,v]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--t2);text-transform:capitalize">${k}</span>
+        <span style="font-weight:600">${v}%</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${v}%;background:${k==='mobile'?'var(--p)':k==='desktop'?'var(--cyan)':'var(--yellow)'}"></div></div>
+    </div>`).join('');
+}
+
+// ══════════════════ ANALYTICS PAGE ══════════════════
+function renderAnalytics() {
+  renderBigChart(30);
+  renderTopLinks();
+  renderDeviceBars();
+}
+
+function renderBigChart(days) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  const data = Array.from({length:days}, (_,i) => ({
+    label: days <= 7 ? ['M','T','W','T','F','S','S'][i % 7] : (i%5===0 ? months[i] : ''),
+    val: Math.floor(Math.random()*1200 + 400 + Math.sin(i/4)*300),
+    unique: Math.floor(Math.random()*800 + 200 + Math.sin(i/4)*200)
+  }));
+  const max = Math.max(...data.map(d => d.val));
+  const bars = data.map(d => `
+    <div class="big-bar-wrap" title="${d.val} clicks">
+      <div class="big-bar" style="height:${Math.round((d.val/max)*120)+4}px;background:var(--grad)"></div>
+      <div class="big-bar-label">${d.label}</div>
+    </div>`).join('');
+  document.getElementById('bigBars').innerHTML = bars;
+}
+
+function updateAnalyticsChart(days) { renderBigChart(parseInt(days)); }
+
+function renderTopLinks() {
+  const sorted = [...state.links].sort((a,b) => b.clicks - a.clicks).slice(0,5);
+  const tbody = document.getElementById('topLinksBody');
+  tbody.innerHTML = sorted.map((l,i) => {
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+    return `<tr>
+      <td><div class="rank-badge ${rankClass}">${i+1}</div></td>
+      <td><div class="url-cell"><div style="font-size:13px;font-weight:600;color:var(--cyan)">snip.ly/${l.slug}</div><div class="url-original">${l.name}</div></div></td>
+      <td><span style="font-weight:700">${l.clicks.toLocaleString()}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDeviceBars() {
+  const agg = {mobile:0,desktop:0,tablet:0};
+  state.links.forEach(l => { agg.mobile += l.device.mobile; agg.desktop += l.device.desktop; agg.tablet += l.device.tablet; });
+  const total = agg.mobile + agg.desktop + agg.tablet;
+  const pct = {mobile:Math.round(agg.mobile/total*100),desktop:Math.round(agg.desktop/total*100),tablet:Math.round(agg.tablet/total*100)};
+  document.getElementById('deviceBars').innerHTML = deviceBarsHtml(pct);
+}
+
+// ══════════════════ MODAL HELPERS ══════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModalOnBg(e, id) { if (e.target.id === id) closeModal(id); }
+
+// ══════════════════ DROPDOWN ══════════════════
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+function closeDropdown(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('open'));
+});
+
+// ══════════════════ COPY URL ══════════════════
+function copyUrl(url, btn) {
+  navigator.clipboard.writeText('https://' + url).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = `<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+    showToast('Copied to clipboard!','success');
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path stroke-linecap="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`;
+    }, 2000);
+  });
+}
+
+// ══════════════════ TOGGLE SETTING ══════════════════
+function toggleSetting(btn) {
+  btn.classList.toggle('on');
+  btn.classList.toggle('off');
+  showToast('Setting updated','info');
+}
+
+// ══════════════════ TOAST ══════════════════
+function showToast(msg, type='info') {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = {
+    success:`<svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
+    error:`<svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`,
+    info:`<svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01"/></svg>`,
+    warning:`<svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`
+  };
+  t.innerHTML = `<div class="toast-icon">${icons[type]||icons.info}</div><span>${msg}</span>`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 350);
+  }, 3200);
+}
+
+// ══════════════════ INIT ══════════════════
+// Keyboard shortcut: Escape closes modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+</body>
+</html>
