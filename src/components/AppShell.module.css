@@ -296,6 +296,69 @@
 .dropdownItem:hover { background: rgba(124, 58, 237, .06); color: #f1f5f9; }
 .dropdownDanger:hover { background: rgba(239, 68, 68, .1) !important; color: #ef4444 !important; }
 
+/* Session expiry warning banner */
+.sessionBanner {
+  width: 100%;
+  background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%);
+  border-bottom: 1px solid rgba(239, 68, 68, .4);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fecaca;
+  animation: bannerIn .3s ease;
+}
+
+@keyframes bannerIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.bannerIcon {
+  display: flex;
+  align-items: center;
+  color: #fca5a5;
+  flex-shrink: 0;
+}
+
+.bannerText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bannerTime {
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.bannerSave {
+  color: #fca5a5;
+}
+
+.btnExtend {
+  padding: 5px 16px;
+  background: #fff;
+  color: #991b1b;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.btnExtend:hover {
+  background: #fecaca;
+}
+
 /* Main area */
 .main {
   flex: 1;
