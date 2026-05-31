@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { refreshSession } from '../api/auth'
+import { useToast } from '../context/ToastContext'
 import s from './AppShell.module.css'
 
 function formatTime(ms) {
@@ -14,6 +15,7 @@ function formatTime(ms) {
 
 export default function AppShell({ children }) {
   const { user, logout } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
   const [timeLeft, setTimeLeft] = useState(null)
@@ -72,6 +74,7 @@ export default function AppShell({ children }) {
 
   function handleLogout() {
     logout()
+    showToast('Signed out successfully.', 'info')
     navigate('/login')
   }
 

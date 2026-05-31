@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signup, login } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import styles from './AuthPage.module.css'
 
 export default function AuthPage() {
@@ -9,6 +10,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { saveSession } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
   // Login form state
@@ -37,6 +39,7 @@ export default function AuthPage() {
     try {
       const res = await login({ email: loginEmail, password: loginPassword })
       saveSession(res.data)
+      showToast(`Welcome back, ${res.data.user.name}!`, 'success')
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed. Please try again.')
@@ -68,6 +71,7 @@ export default function AuthPage() {
     try {
       const res = await signup({ name, email: signupEmail, password: signupPassword })
       saveSession(res.data)
+      showToast(`Account created! Welcome, ${res.data.user.name}!`, 'success')
       navigate('/account-created')
     } catch (err) {
       const detail = err.response?.data?.detail

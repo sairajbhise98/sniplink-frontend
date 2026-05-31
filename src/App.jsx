@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import AuthPage from './pages/AuthPage'
 import Dashboard from './pages/Dashboard'
 import AccountCreated from './pages/AccountCreated'
@@ -20,6 +21,7 @@ function GuestRoute({ children }) {
 
 export default function App() {
   return (
+    <ToastProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -32,5 +34,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </ToastProvider>
   )
 }
