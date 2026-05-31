@@ -213,7 +213,7 @@ export default function AppShell({ children }) {
               </svg>
             </a>
             <a className={s.footerPortfolio} href="https://sairaj-portfolio.vercel.app" target="_blank" rel="noreferrer">
-              sairaj-bhise.vercel.app
+              sairaj-portfolio.vercel.app
             </a>
           </div>
           <p className={s.footerCopy}>© {new Date().getFullYear()} Shrink. All rights reserved.</p>
