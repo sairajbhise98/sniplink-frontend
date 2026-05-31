@@ -192,7 +192,7 @@ export default function AppShell({ children }) {
         </div>
       </header>
 
-      {timeLeft !== null && timeLeft < 300_000 && (
+      {timeLeft !== null && timeLeft < 120_000 && (
         <div className={s.sessionBanner}>
           <span className={s.bannerIcon}>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
