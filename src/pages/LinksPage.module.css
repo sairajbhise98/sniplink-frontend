@@ -205,6 +205,38 @@
 .copyBtn:hover { color: #06b6d4; }
 .copyBtnCopied { color: #10b981 !important; }
 
+/* Clicks cell */
+.clicksCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.miniBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+}
+
+.miniBar {
+  width: 4px;
+  border-radius: 2px 2px 0 0;
+  background: #7c3aed;
+  opacity: 0.35;
+}
+
+.miniBarLast {
+  opacity: 1;
+}
+
+.clickCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+}
+
 /* Status badges */
 .badge {
   display: inline-flex;
@@ -465,6 +497,6 @@
 @media (max-width: 640px) {
   .table th:nth-child(3),
   .table td:nth-child(3),
-  .table th:nth-child(4),
-  .table td:nth-child(4) { display: none; }
+  .table th:nth-child(5),
+  .table td:nth-child(5) { display: none; }
 }

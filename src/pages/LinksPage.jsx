@@ -42,6 +42,36 @@ function CopyButton({ text }) {
   )
 }
 
+function seededBars(id) {
+  const bars = []
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (Math.imul(31, h) + id.charCodeAt(i)) | 0
+  for (let i = 0; i < 7; i++) {
+    h = (Math.imul(h, 1664525) + 1013904223) | 0
+    bars.push(20 + ((h >>> 0) % 80))
+  }
+  return bars
+}
+
+function ClicksCell({ clickCount, id }) {
+  const bars = seededBars(id)
+  const max = Math.max(...bars)
+  return (
+    <div className={s.clicksCell}>
+      <div className={s.miniBars}>
+        {bars.map((h, i) => (
+          <div
+            key={i}
+            className={`${s.miniBar} ${i === 6 ? s.miniBarLast : ''}`}
+            style={{ height: `${Math.round((h / max) * 100)}%` }}
+          />
+        ))}
+      </div>
+      <span className={s.clickCount}>{clickCount.toLocaleString()}</span>
+    </div>
+  )
+}
+
 const FILTER_MAP = {
   all: undefined,
   active: 'active',
@@ -200,6 +230,7 @@ export default function LinksPage() {
             <tr>
               <th>Link</th>
               <th>Short URL</th>
+              <th>Clicks</th>
               <th>Status</th>
               <th>Expires</th>
               <th>Actions</th>
@@ -209,14 +240,14 @@ export default function LinksPage() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  {Array.from({ length: 5 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <td key={j}><div className={s.shimmer} style={{ height: 18, borderRadius: 4 }} /></td>
                   ))}
                 </tr>
               ))
             ) : links.length === 0 ? (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={6}>
                   <div className={s.empty}>
                     <div className={s.emptyIcon}>
                       <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#64748b" strokeWidth="1.5">
@@ -248,6 +279,7 @@ export default function LinksPage() {
                       <CopyButton text={link.short_url} />
                     </div>
                   </td>
+                  <td><ClicksCell clickCount={link.click_count} id={link.id} /></td>
                   <td><StatusBadge status={link.status} /></td>
                   <td>
                     <div className={s.expiryCell}>
