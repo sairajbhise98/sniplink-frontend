@@ -107,6 +107,13 @@
   font-weight: 600;
   color: #94a3b8;
   transition: all .3s;
+  cursor: pointer;
+  user-select: none;
+}
+
+.timer:hover {
+  border-color: #7c3aed;
+  color: #f1f5f9;
 }
 
 .timerWarning {
@@ -136,6 +143,55 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: .6; }
+}
+
+/* Timer wrapper + dropdown */
+.timerWrap {
+  position: relative;
+}
+
+.timerMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: #0d0d24;
+  border: 1px solid #252550;
+  border-radius: 8px;
+  min-width: 170px;
+  z-index: 200;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .5);
+  overflow: hidden;
+}
+
+.timerMenuLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 10px 14px 6px;
+}
+
+.timerMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s;
+  text-align: left;
+}
+
+.timerMenuItem:hover {
+  background: rgba(124, 58, 237, .08);
+  color: #f1f5f9;
 }
 
 /* Shorten URL button */

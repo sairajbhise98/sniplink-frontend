@@ -17,7 +17,9 @@ export default function AppShell({ children }) {
   const location = useLocation()
   const [timeLeft, setTimeLeft] = useState(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [timerOpen, setTimerOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     function tick() {
@@ -35,10 +37,22 @@ export default function AppShell({ children }) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false)
       }
+      if (timerRef.current && !timerRef.current.contains(e.target)) {
+        setTimerOpen(false)
+      }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  function extendSession(minutes) {
+    const current = localStorage.getItem('shrink_expires')
+    const base = current ? Math.max(new Date(current).getTime(), Date.now()) : Date.now()
+    const newExpiry = new Date(base + minutes * 60 * 1000).toISOString()
+    localStorage.setItem('shrink_expires', newExpiry)
+    setTimeLeft(base + minutes * 60 * 1000 - Date.now())
+    setTimerOpen(false)
+  }
 
   function handleLogout() {
     logout()
@@ -96,12 +110,38 @@ export default function AppShell({ children }) {
 
         <div className={s.right}>
           {timeLeft !== null && (
-            <div className={`${s.timer} ${timerClass}`}>
-              <span className={s.timerDot} />
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" />
-              </svg>
-              {formatTime(timeLeft)}
+            <div className={s.timerWrap} ref={timerRef}>
+              <div
+                className={`${s.timer} ${timerClass}`}
+                onClick={() => setTimerOpen(o => !o)}
+                title="Extend session"
+              >
+                <span className={s.timerDot} />
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" />
+                </svg>
+                {formatTime(timeLeft)}
+                <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" style={{ opacity: .6 }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              {timerOpen && (
+                <div className={s.timerMenu}>
+                  <div className={s.timerMenuLabel}>Extend session</div>
+                  <button className={s.timerMenuItem} onClick={() => extendSession(15)}>
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" />
+                    </svg>
+                    + 15 minutes
+                  </button>
+                  <button className={s.timerMenuItem} onClick={() => extendSession(30)}>
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" />
+                    </svg>
+                    + 30 minutes
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
