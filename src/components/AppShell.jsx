@@ -141,7 +141,7 @@ export default function AppShell({ children }) {
         <div className={s.footerInner}>
           <p className={s.footerText}>
             Built with Passion and Love towards software development by{' '}
-            <a className={s.footerLink} href="https://sairaj-bhise.vercel.app" target="_blank" rel="noreferrer">
+            <a className={s.footerLink} href="https://sairaj-portfolio.vercel.app" target="_blank" rel="noreferrer">
               Sairaj Bhise
             </a>
           </p>
