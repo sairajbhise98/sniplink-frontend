@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { refreshSession } from '../api/auth'
 import s from './AppShell.module.css'
 
 function formatTime(ms) {
@@ -25,12 +26,18 @@ export default function AppShell({ children }) {
     function tick() {
       const exp = localStorage.getItem('shrink_expires')
       if (!exp) { setTimeLeft(null); return }
-      setTimeLeft(Math.max(0, new Date(exp).getTime() - Date.now()))
+      const left = new Date(exp).getTime() - Date.now()
+      if (left <= 0) {
+        logout()
+        navigate('/login')
+        return
+      }
+      setTimeLeft(left)
     }
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [logout, navigate])
 
   useEffect(() => {
     function handler(e) {
@@ -45,13 +52,22 @@ export default function AppShell({ children }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  function extendSession(minutes) {
-    const current = localStorage.getItem('shrink_expires')
-    const base = current ? Math.max(new Date(current).getTime(), Date.now()) : Date.now()
-    const newExpiry = new Date(base + minutes * 60 * 1000).toISOString()
-    localStorage.setItem('shrink_expires', newExpiry)
-    setTimeLeft(base + minutes * 60 * 1000 - Date.now())
+  async function extendSession(minutes) {
     setTimerOpen(false)
+    const remaining = timeLeft !== null ? Math.max(0, Math.ceil(timeLeft / 60_000)) : 0
+    const expiresInMinutes = remaining + minutes
+    try {
+      const res = await refreshSession(expiresInMinutes)
+      localStorage.setItem('shrink_token', res.data.access_token)
+      localStorage.setItem('shrink_expires', res.data.expires_at)
+      setTimeLeft(new Date(res.data.expires_at).getTime() - Date.now())
+    } catch {
+      // fallback: extend locally if API fails
+      const base = Date.now() + (remaining * 60_000)
+      const newExpiry = new Date(base + minutes * 60_000).toISOString()
+      localStorage.setItem('shrink_expires', newExpiry)
+      setTimeLeft(base + minutes * 60_000 - Date.now())
+    }
   }
 
   function handleLogout() {
